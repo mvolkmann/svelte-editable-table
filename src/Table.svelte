@@ -129,15 +129,12 @@
       draggingEl = list.children.item(draggingRowIndex) as HTMLTableRowElement;
       draggingEl.classList.add('dragging');
 
-      // Let placeholder take height of dragging element
-      // so next element won't move up.
       placeholder = document.createElement('div');
       placeholder.classList.add('placeholder');
       draggingEl.parentNode.insertBefore(
         placeholder,
         draggingEl.nextSibling
       );
-      placeholder.style.height = `${draggingEl.offsetHeight}px`;
     }
 
     // Set position for dragging element.
@@ -325,6 +322,10 @@
     margin-bottom: 0;
   }
 
+  section {
+    --row-height: 52px;
+  }
+
   section :global(.clone-table),
   section :global(table) {
     border-collapse: collapse;
@@ -341,8 +342,11 @@
   }
 
   section :global(.placeholder) {
+    --border-width: 2px;
+    --fudge: 3px;
     background-color: #edf2f7;
-    border: 2px dashed #cbd5e0;
+    border: var(--border-width) dashed #cbd5e0;
+    height: calc(var(--row-height) - 2 * var(--border-width) - var(--fudge));
   }
 
   section :global(td),
@@ -360,6 +364,6 @@
   }
 
   section :global(tr) {
-    height: 52px
+    height: var(--row-height);
   }
 </style>
