@@ -8,7 +8,7 @@
   // Support for drag and drop of table rows was heavily inspired by
   // https://htmldom.dev/drag-and-drop-table-row/
 
-  let draggingEle: HTMLTableRowElement;
+  let draggingEl: HTMLTableRowElement;
   let draggingRowIndex: number;
   let editIndex: number;
   let editProperty: string;
@@ -35,7 +35,7 @@
     // Hide the original table.
     table.style.visibility = 'hidden';
 
-    table.querySelectorAll('tr').forEach(row => {
+    for (const row of table.querySelectorAll('tr')) {
       // Create a new table from given row.
       const item = document.createElement('div');
       item.classList.add('draggable');
@@ -45,19 +45,18 @@
       newTable.style.width = `${width}px`;
 
       const newRow = document.createElement('tr');
-      const cells = [].slice.call(row.children);
-      cells.forEach((cell: HTMLTableCellElement) => {
+      for (const cell of row.children) {
         const newCell = cell.cloneNode(true) as HTMLTableCellElement;
         newCell.style.width = `${parseInt(
           window.getComputedStyle(cell).width
         )}px`;
         newRow.appendChild(newCell);
-      });
+      }
 
       newTable.appendChild(newRow);
       item.appendChild(newTable);
       list.appendChild(item);
-    });
+    }
   }
 
   function deleteRow(index: number): void {
@@ -101,15 +100,16 @@
     return rectA.top + rectA.height / 2 < rectB.top + rectB.height / 2;
   }
 
-  function mouseDownHandler(e): void {
+  function mouseDownHandler(e: MouseEvent): void {
     // Get table row containing target.
-    let originalRow = e.target.parentNode;
+    const target = e.target as Element;
+    let originalRow = target.parentNode;
     while (originalRow.nodeName !== 'TR') {
       originalRow = originalRow.parentNode;
     }
 
     const trs = Array.from(table.querySelectorAll('tr'));
-    draggingRowIndex = trs.indexOf(originalRow);
+    draggingRowIndex = trs.indexOf(originalRow as HTMLTableRowElement);
 
     // Determine mouse position.
     x = e.clientX;
@@ -126,33 +126,33 @@
 
       cloneTable();
 
-      draggingEle = list.children.item(draggingRowIndex) as HTMLTableRowElement;
-      draggingEle.classList.add('dragging');
+      draggingEl = list.children.item(draggingRowIndex) as HTMLTableRowElement;
+      draggingEl.classList.add('dragging');
 
       // Let placeholder take height of dragging element
       // so next element won't move up.
       placeholder = document.createElement('div');
       placeholder.classList.add('placeholder');
-      draggingEle.parentNode.insertBefore(
+      draggingEl.parentNode.insertBefore(
         placeholder,
-        draggingEle.nextSibling
+        draggingEl.nextSibling
       );
-      placeholder.style.height = `${draggingEle.offsetHeight}px`;
+      placeholder.style.height = `${draggingEl.offsetHeight}px`;
     }
 
     // Set position for dragging element.
-    draggingEle.style.position = 'absolute';
-    draggingEle.style.top = `${draggingEle.offsetTop + e.clientY - y}px`;
-    draggingEle.style.left = `${
-      draggingEle.offsetLeft + e.clientX - x
+    draggingEl.style.position = 'absolute';
+    draggingEl.style.top = `${draggingEl.offsetTop + e.clientY - y}px`;
+    draggingEl.style.left = `${
+      draggingEl.offsetLeft + e.clientX - x
     }px`;
 
     // Reassign position of mouse.
     x = e.clientX;
     y = e.clientY;
 
-    // The current order is prevEle, draggingEle, placeholder, nextEle.
-    const prevEle = draggingEle.previousElementSibling;
+    // The current order is prevEle, draggingEl, placeholder, nextEle.
+    const prevEle = draggingEl.previousElementSibling;
     const nextEle = placeholder.nextElementSibling;
 
     // If the dragging element is above the previous element
@@ -162,26 +162,26 @@
     if (
       prevEle &&
       prevEle.previousElementSibling &&
-      isAbove(draggingEle, prevEle)
+      isAbove(draggingEl, prevEle)
     ) {
       // current order -> new order
       // prevEle       -> placeholder
-      // draggingEle   -> draggingEle
+      // draggingEl    -> draggingEl
       // placeholder   -> prevEle
-      swapElements(placeholder, draggingEle);
+      swapElements(placeholder, draggingEl);
       swapElements(placeholder, prevEle);
       return;
     }
 
     // If the dragging element is below the next element
     // and the ser moves the dragging element to the bottom ...
-    if (nextEle && isAbove(nextEle, draggingEle)) {
+    if (nextEle && isAbove(nextEle, draggingEl)) {
       // current order -> new order
-      // draggingEle   -> nextEle
+      // draggingEl    -> nextEle
       // placeholder   -> placeholder
-      // nextEle       -> draggingEle
+      // nextEle       -> draggingEl
       swapElements(nextEle, placeholder);
-      swapElements(nextEle, draggingEle);
+      swapElements(nextEle, draggingEl);
     }
   }
 
@@ -191,12 +191,12 @@
     // Remove placeholder.
     if (placeholder) placeholder.parentNode.removeChild(placeholder);
 
-    draggingEle.classList.remove('dragging');
-    draggingEle.style.removeProperty('top');
-    draggingEle.style.removeProperty('left');
-    draggingEle.style.removeProperty('position');
+    draggingEl.classList.remove('dragging');
+    draggingEl.style.removeProperty('top');
+    draggingEl.style.removeProperty('left');
+    draggingEl.style.removeProperty('position');
 
-    const endRowIndex = Array.from(list.children).indexOf(draggingEle);
+    const endRowIndex = Array.from(list.children).indexOf(draggingEl);
 
     isDraggingStarted = false;
 
@@ -204,7 +204,7 @@
     list.parentNode.removeChild(list);
 
     // Move dragged row to endRowIndex.
-    let rows = [].slice.call(table.querySelectorAll('tr'));
+    const rows = Array.from(table.querySelectorAll('tr'));
     draggingRowIndex > endRowIndex
       ? rows[endRowIndex].parentNode.insertBefore(
           rows[draggingRowIndex],
@@ -311,6 +311,7 @@
   .actions button {
     background-color: transparent;
     border: none;
+    cursor: pointer;
     margin-bottom: 0;
     padding: 0 6px;
   }
@@ -327,17 +328,16 @@
   section :global(.clone-table),
   section :global(table) {
     border-collapse: collapse;
-    border: none;
   }
 
-  table :global(.draggable) {
-    cursor: move;
+  section :global(.draggable) {
+    cursor: ns-resize;
     user-select: none;
   }
 
   section :global(.dragging) {
     background: white;
-    z-index: 999;
+    z-index: 999; /* probably don't need this */
   }
 
   section :global(.placeholder) {
@@ -347,8 +347,16 @@
 
   section :global(td),
   section :global(th) {
-    border: solid lightgray 1px;
+    border: 1px solid lightgray;
     padding: 0.5rem;
+  }
+
+  section :global(.clone-list td) {
+    border-top-width: 0;
+  }
+
+  section :global(.dragging td) {
+    border-top-width: 1px;
   }
 
   section :global(tr) {
