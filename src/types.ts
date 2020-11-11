@@ -1,6 +1,9 @@
 export type Heading = {
-  title: string;
+  getOptions?: () => string[];
   property: string;
+  title: string;
+  type?: string;
+  width?: number;
 };
 
 export type ScoutField = {
